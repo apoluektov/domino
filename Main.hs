@@ -1,4 +1,3 @@
-import Control.Exception
 import Game
 
 main = do
@@ -44,19 +43,32 @@ restoreGameState evts = foldr f (GameState 28 0 [] Empty) evts
               = GameState (stk-1) oh (p:h) t
           f (_, EPass) gs = gs
 
+readUserInput :: (Read a) => String -> IO a
+readUserInput retryMsg = do
+  s <- getLine
+  let r = reads s
+  case r of
+    [(i,"")] -> return i
+    _ -> do
+           putStrLn retryMsg
+           readUserInput retryMsg
+
 readHand :: IO Hand
-readHand = readLn
+readHand = (readUserInput "Incorrect hand, try again:")
 
 readFirst :: IO PlayerId
-readFirst = readLn
+readFirst = (readUserInput "Incorrect player id, try again:")
 
 readMove :: IO Event
-readMove = readLn
+readMove = (readUserInput "Incorrect move, try again:")
+
+readPiece :: IO Piece
+readPiece = (readUserInput "Incorrect piece, try again:")
 
 loop :: PlayerId -> Strategy -> GameEvents -> IO GameResult
 loop Opponent s evts = do
   putStrLn "What is opponent's move?"
-  move <- readLn
+  move <- readMove
   case move of
     EDraw Unknown -> loop Opponent s ((Opponent,EDraw Unknown):evts)
     EPass | head evts == (Me,EPass) -> return GRDraw
@@ -71,7 +83,7 @@ loop Me (Strategy f) evts = do
      -- TODO: should be notified of what was drawn
      EDraw Unknown -> do
              putStrLn "What did I get from the stock?"
-             piece <- readLn
+             piece <- readPiece
              loop Me newS ((Me,EDraw (Known piece)):evts)
      EPass | head evts == (Opponent,EPass) -> return GRDraw
            | otherwise -> loop Opponent newS ((Me,EPass):evts)
