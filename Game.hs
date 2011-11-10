@@ -7,12 +7,34 @@ data Table = Table [Piece] Int Int
              deriving (Show)
 
 data Direction = R | L
-                 deriving (Show)
+                 deriving (Show, Read, Eq)
 
 type Hand = [Piece]
 
 data Move = Move Piece Direction
-            deriving (Show)
+            deriving (Show, Read, Eq)
+
+data GeneralPiece = Unknown | Known Piece
+                    deriving (Show, Eq, Read)
+
+data Event = EBegin Hand PlayerId -- id of player that makes first move
+           | EMove Move
+           | EDraw GeneralPiece
+           | EPass
+             deriving (Show, Read, Eq)
+
+-- TODO: trivial strategy
+-- TODO: then elaborated strategies
+
+type GameEvents = [(PlayerId, Event)]
+
+data PlayerId = Me | Opponent
+                deriving (Show, Read, Eq)
+
+data Strategy = Strategy (GameEvents -> (Event, Strategy))
+
+data GameResult = GRDraw | GRWin PlayerId
+                deriving (Show, Eq)
 
 isCorrectMove :: Table -> Move -> Bool
 isCorrectMove Empty _ = True
