@@ -12,20 +12,23 @@ game = do
   first <- readFirst
   loop first simpleStrat [(first, EBegin hand first)]
 
-data GameState = GameState Int Int Hand Table
-                 deriving (Show)
--- pieces in stock; pieces at opponent's hand; my hand; table
+data GameState = GameState {
+      stock        :: Int
+    , opponentHand :: Int
+    , hand         :: Hand
+    , table        :: Table
+    } deriving (Show)
 
 simpleStrat :: Strategy
 simpleStrat = (Strategy f)
     where f evts = (evt, (Strategy f))
               where
                 evt
-                    | null moves && stock > 0 = EDraw Unknown
+                    | null moves && stock st > 0 = EDraw Unknown
                     | null moves              = EPass
                     | otherwise               = EMove (head moves)
-                moves = correctMoves hand table
-                (GameState stock _ hand table) = restoreGameState evts
+                moves = correctMoves (hand st) (table st)
+                st = restoreGameState evts
 
 restoreGameState :: GameEvents -> GameState
 restoreGameState evts = foldr f (GameState 28 0 [] Empty) evts
@@ -97,6 +100,6 @@ loop Me (Strategy f) evts = do
 
 checkWin :: PlayerId -> GameEvents -> Bool
 checkWin p evts = numPieces p st == 0
-    where numPieces Me       (GameState _ _ h _) = length h
-          numPieces Opponent (GameState _ o _ _) = o
+    where numPieces Me       = length . hand
+          numPieces Opponent = opponentHand
           st = restoreGameState evts
