@@ -30,7 +30,7 @@ simpleStrat = (Strategy f)
 restoreGameState :: GameEvents -> GameState
 restoreGameState evts = foldr f (GameState 28 0 [] Empty) evts
     where f :: (PlayerId,Event) -> GameState -> GameState
-          f (_, (EBegin h _)) st = (GameState 14 7 h Empty)
+          f (_, (EBegin h _)) st = (GameState (28 - length h) 7 h Empty)
           f (Opponent, (EMove m)) (GameState stk oh h t)
               = (GameState stk (oh-1) h (makeMove t m))
           f (Me, (EMove m@(Move p _))) (GameState stk oh h t)
@@ -97,12 +97,15 @@ loop Me (Strategy f) evts = do
 
 -- TODO: refactor me
 checkWin :: PlayerId -> GameEvents -> Bool
-checkWin p evts = checkWin' evts 7 == 0
+checkWin p evts = checkWin' evts 0 == 0
     where checkWin' [] acc = acc
           checkWin' ((p',EDraw _):evts) acc
               | p == p'   = checkWin' evts acc+1
               | otherwise = checkWin' evts acc
           checkWin' ((p',EMove _):evts) acc
               | p == p'   = checkWin' evts acc-1
+              | otherwise = checkWin' evts acc
+          checkWin' ((p',EBegin h _):evts) acc
+              | p == Me   = checkWin' evts acc+length h
               | otherwise = checkWin' evts acc
           checkWin' (_:evts) acc = checkWin' evts acc
