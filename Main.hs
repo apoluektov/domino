@@ -95,17 +95,8 @@ loop Me (Strategy f) evts = do
 -- TODO: restore game state from events
 -- TODO: parsing errors should not lead to crash
 
--- TODO: refactor me
 checkWin :: PlayerId -> GameEvents -> Bool
-checkWin p evts = checkWin' evts 0 == 0
-    where checkWin' [] acc = acc
-          checkWin' ((p',EDraw _):evts) acc
-              | p == p'   = checkWin' evts acc+1
-              | otherwise = checkWin' evts acc
-          checkWin' ((p',EMove _):evts) acc
-              | p == p'   = checkWin' evts acc-1
-              | otherwise = checkWin' evts acc
-          checkWin' ((p',EBegin h _):evts) acc
-              | p == Me   = checkWin' evts acc+length h
-              | otherwise = checkWin' evts acc
-          checkWin' (_:evts) acc = checkWin' evts acc
+checkWin p evts = numPieces p st == 0
+    where numPieces Me       (GameState _ _ h _) = length h
+          numPieces Opponent (GameState _ o _ _) = o
+          st = restoreGameState evts
