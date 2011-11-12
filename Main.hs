@@ -31,7 +31,6 @@ loop Me (Strategy f) evts = do
   let (evt, newS) = f evts
   putStrLn $ show evt
   case evt of
-     -- TODO: should be notified of what was drawn
      EDraw Unknown -> do
              putStrLn "What did I get from the stock?"
              piece <- readPiece
@@ -42,9 +41,6 @@ loop Me (Strategy f) evts = do
              | otherwise -> loop Opponent newS updEvts
        where updEvts = ((Me,EMove m):evts)
 
-
--- TODO: restore game state from events
--- TODO: parsing errors should not lead to crash
 
 checkWin :: PlayerId -> GameEvents -> Bool
 checkWin p evts = numPieces p st == 0

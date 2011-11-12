@@ -23,9 +23,6 @@ data Event = EBegin Hand PlayerId -- id of player that makes first move
            | EPass
              deriving (Show, Read, Eq)
 
--- TODO: trivial strategy
--- TODO: then elaborated strategies
-
 type GameEvents = [(PlayerId, Event)]
 
 data PlayerId = Me | Opponent
