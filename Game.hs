@@ -37,10 +37,9 @@ isCorrectMove :: Table -> Move -> Bool
 isCorrectMove Empty _ = True
 isCorrectMove (Table _ p1 _) (Move (x1,x2) L)
     | p1 == x1 || p1 == x2 = True
-    | otherwise            = False
 isCorrectMove (Table _ _ p2) (Move (x1,x2) R)
     | p2 == x1 || p2 == x2 = True
-    | otherwise            = False
+isCorrectMove _ _ = False
 
 -- TODO: make me total
 makeMove :: Table -> Move -> Table
@@ -48,13 +47,10 @@ makeMove Empty (Move (x0,x1) _) = Table [(x0,x1)] x0 x1
 makeMove (Table ps p0 p1) (Move (x0,x1) L)
     | p0 == x0 = (Table ((x1,x0):ps) x1 p1)
     | p0 == x1 = (Table ((x0,x1):ps) x0 p1)
-    | otherwise = error "Incorrect move"
 makeMove (Table ps p0 p1) (Move (x0,x1) R)
     | p1 == x0 = (Table (ps ++ [(x0,x1)]) p0 x1)
     | p1 == x1 = (Table (ps ++ [(x1,x0)]) p0 x0)
-    | otherwise = error "Incorrect move"
+makeMove _ _ = error "Incorrect move"
 
 correctMoves :: Hand -> Table -> [Move]
-correctMoves ps Empty = [Move p d | p <- ps, d <- [L,R]]
-correctMoves ps t     = [Move p d | p <- ps, d <- [L,R], 
-                                         isCorrectMove t (Move p d)]
+correctMoves ps t = [Move p d | p <- ps, d <- [L,R], isCorrectMove t (Move p d)]
