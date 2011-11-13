@@ -1,4 +1,10 @@
-module Read where
+module Read
+    (
+      readHand
+    , readFirst
+    , readMove
+    , readPiece
+    ) where
 
 import Game
 import Text.ParserCombinators.Parsec

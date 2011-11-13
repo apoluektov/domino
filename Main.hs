@@ -1,6 +1,6 @@
 import Game
 import GameState
-import Read hiding (hand)
+import Read
 import Strategy.Simple
 
 main = do
