@@ -10,6 +10,18 @@ import Game
 import Text.ParserCombinators.Parsec
 import Data.Char (toUpper)
 
+readHand :: IO Hand
+readHand = readUserInput (parser hand) "Incorrect hand, try again:"
+
+readFirst :: IO PlayerId
+readFirst = readUserInput (parser playerId) "Incorrect player id, try again:"
+
+readMove :: IO Event
+readMove = readUserInput (parser move) "Incorrect move, try again:"
+
+readPiece :: IO Piece
+readPiece = readUserInput (parser onePiece) "Incorrect piece, try again:"
+
 readUserInput :: (String -> Either ParseError a) -> String -> IO a
 readUserInput parse retryMsg = do
   s <- getLine
@@ -20,18 +32,8 @@ readUserInput parse retryMsg = do
            putStrLn $ retryMsg
            readUserInput parse retryMsg
 
-readHand :: IO Hand
-readHand = (readUserInput parseHand "Incorrect hand, try again:")
-
-readFirst :: IO PlayerId
-readFirst = (readUserInput parsePlayerId "Incorrect player id, try again:")
-
-readMove :: IO Event
-readMove = (readUserInput parseEvent "Incorrect move, try again:")
-
-readPiece :: IO Piece
-readPiece = (readUserInput parsePiece "Incorrect piece, try again:")
-
+parser :: GenParser Char () a -> String -> Either ParseError a
+parser p = parse p "input"
 
 piece :: GenParser Char st Piece
 piece = do
@@ -75,8 +77,3 @@ playerId :: GenParser Char st PlayerId
 playerId = do
   (string "me" >> return Me)
   <|> (string "opponent" >> return Opponent)
-
-parsePiece = parse onePiece "input"
-parseHand = parse hand "input"
-parseEvent = parse event "input"
-parsePlayerId = parse playerId "input"
