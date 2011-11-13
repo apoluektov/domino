@@ -1,26 +1,76 @@
 module Read where
 
 import Game
+import Text.ParserCombinators.Parsec
+import Data.Char (toUpper)
 
-readUserInput :: (Read a) => String -> IO a
-readUserInput retryMsg = do
+readUserInput :: (String -> Either ParseError a) -> String -> IO a
+readUserInput parse retryMsg = do
   s <- getLine
-  let r = reads s
+  let r = parse s
   case r of
-    [(i,"")] -> return i
-    _ -> do
-           putStrLn retryMsg
-           readUserInput retryMsg
+    Right i -> return i
+    Left  m -> do
+           putStrLn $ retryMsg
+           readUserInput parse retryMsg
 
 readHand :: IO Hand
-readHand = (readUserInput "Incorrect hand, try again:")
+readHand = (readUserInput parseHand "Incorrect hand, try again:")
 
 readFirst :: IO PlayerId
-readFirst = (readUserInput "Incorrect player id, try again:")
+readFirst = (readUserInput parsePlayerId "Incorrect player id, try again:")
 
 readMove :: IO Event
-readMove = (readUserInput "Incorrect move, try again:")
+readMove = (readUserInput parseEvent "Incorrect move, try again:")
 
 readPiece :: IO Piece
-readPiece = (readUserInput "Incorrect piece, try again:")
+readPiece = (readUserInput parsePiece "Incorrect piece, try again:")
 
+
+piece :: GenParser Char st Piece
+piece = do
+  first <- digit
+  second <- digit
+  return (read [first],read [second])
+
+onePiece :: GenParser Char st Piece
+onePiece = do
+  p <- piece
+  eof
+  return p
+
+hand :: GenParser Char st Hand
+hand = sepBy piece space
+
+event :: GenParser Char st Event
+event = do
+  (char 'm' >> move)
+  <|> (char 'd' >> draw)
+  <|> (char 'p' >> pass)
+
+move :: GenParser Char st Event
+move = do
+  p <- piece
+  d <- oneOf "lLrR"
+  eof
+  return $ EMove (Move p (read [toUpper d]))
+
+draw :: GenParser Char st Event
+draw = do
+  eof
+  return $ EDraw Unknown
+
+pass :: GenParser Char st Event
+pass = do
+  eof
+  return $ EPass
+
+playerId :: GenParser Char st PlayerId
+playerId = do
+  (string "me" >> return Me)
+  <|> (string "opponent" >> return Opponent)
+
+parsePiece = parse onePiece "Incorrect piece, try again:"
+parseHand = parse hand "Incorrect hand, try again:"
+parseEvent = parse event "Incorrect move, try again:"
+parsePlayerId = parse playerId "Incorrect player, try again:"
