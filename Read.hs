@@ -76,7 +76,7 @@ playerId = do
   (string "me" >> return Me)
   <|> (string "opponent" >> return Opponent)
 
-parsePiece = parse onePiece "Incorrect piece, try again:"
-parseHand = parse hand "Incorrect hand, try again:"
-parseEvent = parse event "Incorrect move, try again:"
-parsePlayerId = parse playerId "Incorrect player, try again:"
+parsePiece = parse onePiece "input"
+parseHand = parse hand "input"
+parseEvent = parse event "input"
+parsePlayerId = parse playerId "input"
