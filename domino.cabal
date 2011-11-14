@@ -1,0 +1,16 @@
+Name:        domino
+Version:     0.1
+
+Synopsis:    The bot for playing Domino game
+Description:
+  Bot for playing domino game. Currently only plays (trivialy) versus human.
+Author:      Alexander Poluektov
+Maintainer:  alexander.poluektov@gmail.com
+License:     MIT
+
+Cabal-Version: >= 1.2
+
+executable domino
+  Main-Is:        Main.hs
+  Hs-Source-Dirs: src
+  Build-Depends:  base >= 2.0, parsec
