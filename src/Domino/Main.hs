@@ -3,10 +3,12 @@
 -- Use, modification and distribution are subject to the MIT license
 -- (See accompanyung file MIT-LICENSE)
 
-import Game
-import GameState
-import Read
-import Strategy.Simple
+module Domino.Main where
+
+import Domino.Game
+import Domino.GameState
+import Domino.Read
+import Domino.Strategy.Simple
 
 main = do
   result <- game

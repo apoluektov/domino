@@ -3,10 +3,10 @@
 -- Use, modification and distribution are subject to the MIT license
 -- (See accompanyung file MIT-LICENSE)
 
-module Strategy.Simple where
+module Domino.Strategy.Simple where
 
-import Game
-import GameState
+import Domino.Game
+import Domino.GameState
 
 simpleStrat :: Strategy
 simpleStrat = (Strategy f)

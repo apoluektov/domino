@@ -3,7 +3,7 @@
 -- Use, modification and distribution are subject to the MIT license
 -- (See accompanyung file MIT-LICENSE)
 
-module Read
+module Domino.Read
     (
       readHand
     , readFirst
@@ -11,7 +11,7 @@ module Read
     , readPiece
     ) where
 
-import Game
+import Domino.Game
 import Text.ParserCombinators.Parsec
 import Data.Char (toUpper)
 

@@ -3,9 +3,9 @@
 -- Use, modification and distribution are subject to the MIT license
 -- (See accompanyung file MIT-LICENSE)
 
-module GameState where
+module Domino.GameState where
 
-import Game
+import Domino.Game
 
 data GameState = GameState {
       stock        :: Int

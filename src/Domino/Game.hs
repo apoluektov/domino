@@ -3,7 +3,7 @@
 -- Use, modification and distribution are subject to the MIT license
 -- (See accompanyung file MIT-LICENSE)
 
-module Game where
+module Domino.Game where
 
 type Piece = (Int, Int)
 
