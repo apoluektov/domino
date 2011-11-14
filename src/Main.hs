@@ -3,8 +3,6 @@
 -- Use, modification and distribution are subject to the MIT license
 -- (See accompanyung file MIT-LICENSE)
 
-module Domino.Main where
-
 import Domino.Game
 import Domino.GameState
 import Domino.Read
