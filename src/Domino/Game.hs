@@ -46,6 +46,9 @@ isCorrectMove (Table _ _ p2) (Move (x1,x2) R)
     | p2 == x1 || p2 == x2 = True
 isCorrectMove _ _ = False
 
+ends :: Table -> (Int, Int)
+ends (Table _ a b) = (a,b)
+
 -- TODO: make me total
 makeMove :: Table -> Move -> Table
 makeMove Empty (Move (x0,x1) _) = Table [(x0,x1)] x0 x1
