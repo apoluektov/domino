@@ -22,7 +22,7 @@ readFirst :: IO PlayerId
 readFirst = readUserInput (parser playerId) "Incorrect player id, try again:"
 
 readMove :: IO Event
-readMove = readUserInput (parser move) "Incorrect move, try again:"
+readMove = readUserInput (parser event) "Incorrect move, try again:"
 
 readPiece :: IO Piece
 readPiece = readUserInput (parser onePiece) "Incorrect piece, try again:"
