@@ -7,6 +7,7 @@ import Domino.Game
 import Domino.GameState
 import Domino.Read
 import Domino.Strategy.Simple
+import Domino.Strategy.Counting
 
 main = do
   result <- game
@@ -18,7 +19,7 @@ game = do
   hand <-  readHand
   putStrLn "Whose move is the first?"
   first <- readFirst
-  loop first simpleStrat [(first, EBegin hand first)]
+  loop first counting [(first, EBegin hand first)]
 
 
 loop :: PlayerId -> Strategy -> GameEvents -> IO GameResult
