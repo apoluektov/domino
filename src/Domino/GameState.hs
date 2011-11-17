@@ -14,6 +14,9 @@ data GameState = GameState {
     , table        :: Table
     } deriving (Show)
 
+initialState :: GameState
+initialState = GameState 28 0 [] Empty
+
 updateGameState :: (PlayerId,Event) -> GameState -> GameState
 updateGameState (_, (EBegin h _)) st = (GameState (28 - length h) 7 h Empty)
 updateGameState (Opponent, (EMove m)) (GameState stk oh h t)
@@ -30,4 +33,4 @@ updateGameState (_, EPass) gs = gs
 
 
 restoreGameState :: GameEvents -> GameState
-restoreGameState evts = foldr updateGameState (GameState 28 0 [] Empty) evts
+restoreGameState evts = foldr updateGameState initialState evts
