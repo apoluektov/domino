@@ -22,7 +22,7 @@ game = do
   loop first counting [(first, EBegin hand first)]
 
 
-loop :: PlayerId -> Strategy -> GameEvents -> IO GameResult
+loop :: Player -> Strategy -> GameEvents -> IO GameResult
 loop Opponent s evts = do
   putStrLn "What is opponent's move?"
   move <- readMove
@@ -39,8 +39,8 @@ loop Me (Strategy f) evts = do
   case evt of
      EDraw Unknown -> do
              putStrLn "What did I get from the stock?"
-             piece <- readPiece
-             loop Me newS ((Me,EDraw (Known piece)):evts)
+             tile <- readTile
+             loop Me newS ((Me,EDraw (Known tile)):evts)
      EPass | head evts == (Opponent,EPass) -> return GRDraw
            | otherwise -> loop Opponent newS ((Me,EPass):evts)
      EMove m | checkWin Me updEvts -> return (GRWin Me)
@@ -48,8 +48,8 @@ loop Me (Strategy f) evts = do
        where updEvts = ((Me,EMove m):evts)
 
 
-checkWin :: PlayerId -> GameEvents -> Bool
-checkWin p evts = numPieces p st == 0
-    where numPieces Me       = length . hand
-          numPieces Opponent = opponentHand
+checkWin :: Player -> GameEvents -> Bool
+checkWin p evts = numTiles p st == 0
+    where numTiles Me       = length . hand
+          numTiles Opponent = opponentHand
           st = restoreGameState evts

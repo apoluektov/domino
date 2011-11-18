@@ -16,5 +16,5 @@ simpleStrat = (Strategy f)
                     | null moves && stock st > 0 = EDraw Unknown
                     | null moves              = EPass
                     | otherwise               = EMove (head moves)
-                moves = correctMoves (hand st) (table st)
+                moves = correctMoves (hand st) (line st)
                 st = restoreGameState evts

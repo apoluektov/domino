@@ -8,7 +8,7 @@ module Domino.Read
       readHand
     , readFirst
     , readMove
-    , readPiece
+    , readTile
     ) where
 
 import Domino.Game
@@ -18,14 +18,14 @@ import Data.Char (toUpper)
 readHand :: IO Hand
 readHand = readUserInput (parser hand) "Incorrect hand, try again:"
 
-readFirst :: IO PlayerId
-readFirst = readUserInput (parser playerId) "Incorrect player id, try again:"
+readFirst :: IO Player
+readFirst = readUserInput (parser player) "Incorrect player id, try again:"
 
 readMove :: IO Event
 readMove = readUserInput (parser event) "Incorrect move, try again:"
 
-readPiece :: IO Piece
-readPiece = readUserInput (parser onePiece) "Incorrect piece, try again:"
+readTile :: IO Tile
+readTile = readUserInput (parser oneTile) "Incorrect tile, try again:"
 
 readUserInput :: (String -> Either ParseError a) -> String -> IO a
 readUserInput parse retryMsg = do
@@ -40,20 +40,20 @@ readUserInput parse retryMsg = do
 parser :: GenParser Char () a -> String -> Either ParseError a
 parser p = parse p "input"
 
-piece :: GenParser Char st Piece
-piece = do
+tile :: GenParser Char st Tile
+tile = do
   first <- digit
   second <- digit
   return (read [first],read [second])
 
-onePiece :: GenParser Char st Piece
-onePiece = do
-  p <- piece
+oneTile :: GenParser Char st Tile
+oneTile = do
+  p <- tile
   eof
   return p
 
 hand :: GenParser Char st Hand
-hand = sepBy piece space
+hand = sepBy tile space
 
 event :: GenParser Char st Event
 event = do
@@ -63,7 +63,7 @@ event = do
 
 move :: GenParser Char st Event
 move = do
-  p <- piece
+  p <- tile
   d <- oneOf "lLrR"
   eof
   return $ EMove (Move p (read [toUpper d]))
@@ -78,7 +78,7 @@ pass = do
   eof
   return $ EPass
 
-playerId :: GenParser Char st PlayerId
-playerId = do
+player :: GenParser Char st Player
+player = do
   (string "me" >> return Me)
   <|> (string "opponent" >> return Opponent)
