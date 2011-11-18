@@ -18,7 +18,7 @@ initialState :: GameState
 initialState = GameState 28 0 [] Empty
 
 updateGameState :: (PlayerId,Event) -> GameState -> GameState
-updateGameState (_, (EBegin h _)) st = (GameState (28 - length h) 7 h Empty)
+updateGameState (_, (EBegin h _)) st = (GameState (28 - 7 - length h) 7 h Empty)
 updateGameState (Opponent, (EMove m)) (GameState stk oh h t)
     = (GameState stk (oh-1) h (makeMove t m))
 updateGameState (Me, (EMove m@(Move p _))) (GameState stk oh h t)
