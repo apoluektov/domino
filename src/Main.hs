@@ -30,7 +30,10 @@ loop Opponent s evts = do
     EDraw Unknown -> loop Opponent s ((Opponent,EDraw Unknown):evts)
     EPass | head evts == (Me,EPass) -> return GRDraw
           | otherwise -> loop Me s ((Opponent,EPass):evts)
-    EMove m | checkWin Opponent updEvts -> return (GRWin Opponent)
+    EMove m | not (isCorrectMove (line (restoreGameState evts)) m) -> do
+                putStrLn "Move is not correct; try again:"
+                loop Opponent s evts
+            | checkWin Opponent updEvts -> return (GRWin Opponent)
             | otherwise -> loop Me s updEvts
       where updEvts = ((Opponent,EMove m):evts)
 loop Me (Strategy f) evts = do
