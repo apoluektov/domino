@@ -30,21 +30,25 @@ counting = (Strategy f)
                           (a,b) = ends $ makeMove (line st) m
 
 restoreOpponentHand :: GameEvents -> OpponentHand
-restoreOpponentHand evts = fst $ foldr f (initialOpponentHand, initialState) evts
-    where f :: (Player, Event) -> (OpponentHand, GameState) -> (OpponentHand, GameState)
-          f e@(_, (EBegin h _)) (oh,gs)
-              = (foldr updateOpponentHand oh h, updateGameState e gs)
-          f e@(Opponent, (EMove (Move p _))) (oh,gs)
-              = (updateOpponentHand p oh, updateGameState e gs)
-          f e@(Opponent, (EDraw _)) (oh,gs) = (newOh, updateGameState e gs)
-              where newOh = map noEnds (zip oh [0..6])
-                    noEnds (n,i) | i == a || i == b = 0
-                                 | otherwise        = n
-                    (a,b) = ends $ line gs
-          f e@(Me, (EDraw (Known p))) (oh,gs)
-              = (updateOpponentHand p oh, updateGameState e gs)
-          f e (oh,gs) = (oh, updateGameState e gs)
+restoreOpponentHand = fst . foldr f (initialOpponentHand, initialState)
+    where f e (oh, st)
+              = (updateOpponentHandFromEvent e (oh,st), updateGameState e st)
 
+updateOpponentHandFromEvent :: (Player, Event)
+                            -> (OpponentHand, GameState)
+                            -> OpponentHand
+updateOpponentHandFromEvent (_, (EBegin h _)) (oh,gs)
+    = foldr updateOpponentHand oh h
+updateOpponentHandFromEvent (Opponent, (EMove (Move p _))) (oh,gs)
+    = updateOpponentHand p oh
+updateOpponentHandFromEvent (Opponent, (EDraw _)) (oh,gs) = newOh
+    where newOh = map noEnds (zip oh [0..6])
+          noEnds (n,i) | i == a || i == b = 0
+                       | otherwise        = n
+          (a,b) = ends $ line gs
+updateOpponentHandFromEvent (Me, (EDraw (Known p))) (oh,gs)
+    = updateOpponentHand p oh
+updateOpponentHandFromEvent _ (oh, _) = oh
 
 updateOpponentHand :: Tile -> OpponentHand -> OpponentHand
 updateOpponentHand (a,b) oh = map u (zip oh [0..6])
