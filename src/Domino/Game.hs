@@ -33,11 +33,6 @@ type GameEvents = [(Player, Event)]
 data Player = Me | Opponent
               deriving (Show, Read, Eq)
 
-data Strategy = Strategy (GameEvents -> (Event, Strategy))
-
-data GameResult = GRDraw | GRWin Player
-                deriving (Show, Eq)
-
 isCorrectMove :: Line -> Move -> Bool
 isCorrectMove Empty _ = True
 isCorrectMove (Line _ p1 _) (Move (x1,x2) L)

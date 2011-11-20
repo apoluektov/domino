@@ -7,6 +7,7 @@ module Domino.Strategy.Simple where
 
 import Domino.Game
 import Domino.GameState
+import Domino.Strategy
 
 simpleStrat :: Strategy
 simpleStrat = (Strategy f)

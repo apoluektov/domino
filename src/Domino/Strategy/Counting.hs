@@ -9,6 +9,7 @@ import Data.List (minimumBy)
 import Data.Ord (comparing)
 import Domino.Game
 import Domino.GameState
+import Domino.Strategy
 
 type MaxAmount = Int
 type OpponentHand = [MaxAmount]

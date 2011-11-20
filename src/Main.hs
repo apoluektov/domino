@@ -6,8 +6,12 @@
 import Domino.Game
 import Domino.GameState
 import Domino.Read
+import Domino.Strategy
 import Domino.Strategy.Simple
 import Domino.Strategy.Counting
+
+data GameResult = GRDraw | GRWin Player
+                deriving (Show, Eq)
 
 main = do
   result <- game
