@@ -9,14 +9,15 @@ import Domino.Game
 import Domino.GameState
 import Domino.Strategy
 
-anyCorrectMove :: GameEvents -> Event
-anyCorrectMove evts
-    | null moves && stock st > 0 = EDraw Unknown
-    | null moves                 = EPass
-    | otherwise                  = EMove (head moves)
-    where
-      moves = correctMoves (hand st) (line st)
-      st = restoreGameState evts
+anyCorrectMove :: GameEvents -> GameState -> (Event, GameState)
+anyCorrectMove evts st = (evt, updateGameState (Me,evt) st)
+    where evt
+              | null moves && stock st > 0 = EDraw Unknown
+              | null moves                 = EPass
+              | otherwise                  = EMove (head moves)
+          moves = correctMoves (hand st) (line st)
 
 simpleStrat :: Strategy
-simpleStrat = statelessStrategy anyCorrectMove
+simpleStrat = statelessStrategy f
+    where f :: GameEvents -> Event
+          f evts = fst $ anyCorrectMove evts (restoreGameState evts) 
