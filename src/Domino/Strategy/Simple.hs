@@ -8,16 +8,21 @@ module Domino.Strategy.Simple where
 import Domino.Game
 import Domino.GameState
 import Domino.Strategy
+import Control.Monad.State
 
-anyCorrectMove :: GameEvents -> GameState -> (Event, GameState)
-anyCorrectMove evts st = (evt, updateGameState (Me,evt) st)
-    where evt
+anyCorrectMove :: State GameState Event
+anyCorrectMove = do
+  st <- get
+  let e = evt st
+  modify $ updateGameState (Me, e)
+  return e
+    where evt st
               | null moves && stock st > 0 = EDraw Unknown
               | null moves                 = EPass
               | otherwise                  = EMove (head moves)
-          moves = correctMoves (hand st) (line st)
+              where moves = correctMoves (hand st) (line st)
 
 simpleStrat :: Strategy
 simpleStrat = statelessStrategy f
     where f :: GameEvents -> Event
-          f evts = fst $ anyCorrectMove evts (restoreGameState evts) 
+          f evts = evalState anyCorrectMove (restoreGameState evts) 
