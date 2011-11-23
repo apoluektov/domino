@@ -10,6 +10,7 @@ import Domino.GameState
 import Domino.Strategy
 
 anyCorrectMove :: GameEvents -> Event
+anyCorrectMove [(Me, EBegin _ Me _ firstTile)] = EMove (Move firstTile L)
 anyCorrectMove evts
     | null moves && stock st > 0 = EDraw Unknown
     | null moves                 = EPass

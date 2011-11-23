@@ -18,6 +18,7 @@ counting :: Strategy
 counting = statelessStrategy mostInconvenientMove
 
 mostInconvenientMove :: GameEvents -> Event
+mostInconvenientMove [(Me, EBegin _ Me _ firstTile)] = EMove (Move firstTile L)
 mostInconvenientMove evts
     | null moves && stock st > 0 = EDraw Unknown
     | null moves                 = EPass
@@ -39,8 +40,9 @@ restoreOpponentHand = fst . foldr f (initialOpponentHand, initialState)
 updateOpponentHandFromEvent :: (Player, Event)
                             -> (OpponentHand, GameState)
                             -> OpponentHand
-updateOpponentHandFromEvent (_, (EBegin h _)) (oh,gs)
+updateOpponentHandFromEvent (_, (EBegin h _ _ _)) (oh,gs)
     = foldr updateOpponentHand oh h
+-- TODO: take tile that nobody has into account
 updateOpponentHandFromEvent (Opponent, (EMove (Move p _))) (oh,gs)
     = updateOpponentHand p oh
 updateOpponentHandFromEvent (Opponent, (EDraw _)) (oh,gs) = newOh

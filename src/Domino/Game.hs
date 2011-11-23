@@ -22,7 +22,7 @@ data Move = Move Tile End
 data GeneralTile = Unknown | Known Tile
                    deriving (Show, Eq, Read)
 
-data Event = EBegin Hand Player -- id of player that makes first move
+data Event = EBegin Hand Player [Tile] Tile
            | EMove Move
            | EDraw GeneralTile
            | EPass

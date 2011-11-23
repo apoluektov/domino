@@ -21,9 +21,14 @@ game :: IO GameResult
 game = do
   putStrLn "What is my hand?"
   hand <-  readHand
-  putStrLn "Whose move is the first?"
+  putStrLn "Which tiles nobody has (revealed during negotiation)?"
+  nobodyHas <- readHand
+  putStrLn "What is the opening move?"
+  firstMove <- readTile
+  putStrLn "Whose move is the first?" -- TODO: it can be deduced from revealed
   first <- readFirst
-  loop first counting [(first, EBegin hand first)]
+  loop first counting [(first, EBegin hand first nobodyHas firstMove)]
+  -- TODO: tiles that nobody has should be taken into account by strategies
 
 
 loop :: Player -> Strategy -> GameEvents -> IO GameResult
