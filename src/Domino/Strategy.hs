@@ -6,9 +6,10 @@
 module Domino.Strategy where
 
 import Domino.Game
+import Domino.GameState
 
-data Strategy = Strategy (GameEvents -> (Event, Strategy))
+data Strategy = Strategy (GameState -> (Event, Strategy))
 
-statelessStrategy :: (GameEvents -> Event) -> Strategy
+statelessStrategy :: (GameState -> Event) -> Strategy
 statelessStrategy f = Strategy g
-    where g evts = (f evts, Strategy g)
+    where g state = (f state, Strategy g)

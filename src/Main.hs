@@ -41,7 +41,7 @@ loop Opponent s st = do
             | checkWin Opponent (updateGameState (Opponent,move) st) -> return (GRWin Opponent)
             | otherwise -> loop Me s (updateGameState (Opponent,move) st)
 loop Me (Strategy f) st = do
-  let (evt, newS) = f (events st)
+  let (evt, newS) = f st
   putStrLn $ show evt
   case evt of
      EDraw Unknown -> do

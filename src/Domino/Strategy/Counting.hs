@@ -17,15 +17,14 @@ type OpponentHand = [MaxAmount]
 counting :: Strategy
 counting = statelessStrategy mostInconvenientMove
 
-mostInconvenientMove :: GameEvents -> Event
-mostInconvenientMove evts
+mostInconvenientMove :: GameState -> Event
+mostInconvenientMove st
     | null moves && stock st > 0 = EDraw Unknown
     | null moves                 = EPass
     | otherwise                  = EMove (minAmount moves)
     where
       moves = correctMoves (hand st) (line st)
-      st = restoreGameState evts
-      opHand = restoreOpponentHand evts
+      opHand = restoreOpponentHand (events st)
       minAmount = minimumBy (comparing opChoices)
       opChoices m = sum $ fst $ unzip $ filter f $ zip opHand [0..6]
           where f (n,i) = (i == a || i == b)

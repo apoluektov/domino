@@ -24,5 +24,5 @@ anyCorrectMove = do
 
 simpleStrat :: Strategy
 simpleStrat = statelessStrategy f
-    where f :: GameEvents -> Event
-          f evts = evalState anyCorrectMove (restoreGameState evts) 
+    where f :: GameState -> Event
+          f state = evalState anyCorrectMove state
