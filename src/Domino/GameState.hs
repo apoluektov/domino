@@ -12,24 +12,25 @@ data GameState = GameState {
     , opponentHand :: Int
     , hand         :: Hand
     , line         :: Line
+    , events       :: GameEvents
     } deriving (Show)
 
 initialState :: GameState
-initialState = GameState 28 0 [] Empty
+initialState = GameState 28 0 [] Empty []
 
 updateGameState :: (Player,Event) -> GameState -> GameState
-updateGameState (_, (EBegin h _)) st = (GameState (28 - 7 - length h) 7 h Empty)
-updateGameState (Opponent, (EMove m)) (GameState stk oh h t)
-    = (GameState stk (oh-1) h (makeMove t m))
-updateGameState (Me, (EMove m@(Move p _))) (GameState stk oh h t)
-    = GameState stk oh newH (makeMove t m)
+updateGameState e@(_, (EBegin h _)) st = (GameState (28 - 7 - length h) 7 h Empty [e])
+updateGameState e@(Opponent, (EMove m)) (GameState stk oh h t es)
+    = (GameState stk (oh-1) h (makeMove t m) (e:es))
+updateGameState e@(Me, (EMove m@(Move p _))) (GameState stk oh h t es)
+    = GameState stk oh newH (makeMove t m) (e:es)
       where newH = filter (neq p) h
             neq (a,b) (x,y) = ((a,b) /= (x,y) && (a,b) /= (y,x))
-updateGameState (Opponent,(EDraw _)) (GameState stk oh h t)
-    = GameState (stk-1) (oh+1) h t
-updateGameState (Me, (EDraw (Known p))) (GameState stk oh h t)
-    = GameState (stk-1) oh (p:h) t
-updateGameState (_, EPass) gs = gs
+updateGameState e@(Opponent,(EDraw _)) (GameState stk oh h t es)
+    = GameState (stk-1) (oh+1) h t (e:es)
+updateGameState e@(Me, (EDraw (Known p))) (GameState stk oh h t es)
+    = GameState (stk-1) oh (p:h) t (e:es)
+updateGameState e@(_, EPass) gs = gs { events = (e:events gs) }
 
 
 restoreGameState :: GameEvents -> GameState

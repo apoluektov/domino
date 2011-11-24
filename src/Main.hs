@@ -23,39 +23,37 @@ game = do
   hand <-  readHand
   putStrLn "Whose move is the first?"
   first <- readFirst
-  loop first counting [(first, EBegin hand first)] initialState
+  let e = (first, EBegin hand first)
+  loop first counting (updateGameState e initialState)
 
 
-loop :: Player -> Strategy -> GameEvents -> GameState -> IO GameResult
-loop Opponent s evts st = do
+loop :: Player -> Strategy -> GameState -> IO GameResult
+loop Opponent s st = do
   putStrLn "What is opponent's move?"
   move <- readMove
   case move of
-    EDraw Unknown -> loop Opponent s ((Opponent,EDraw Unknown):evts) (updateGameState (Opponent,move) st)
-    EPass | head evts == (Me,EPass) -> return GRDraw
-          | otherwise -> loop Me s ((Opponent,EPass):evts) (updateGameState (Opponent,move) st)
+    EDraw Unknown -> loop Opponent s (updateGameState (Opponent,move) st)
+    EPass | head (events st) == (Me,EPass) -> return GRDraw
+          | otherwise -> loop Me s (updateGameState (Opponent,move) st)
     EMove m | not (isCorrectMove (line st) m) -> do
                 putStrLn "Move is not correct; try again:"
-                loop Opponent s evts st
-            | checkWin Opponent updEvts (updateGameState (Opponent,move) st) -> return (GRWin Opponent)
-            | otherwise -> loop Me s updEvts (updateGameState (Opponent,move) st)
-      where updEvts = ((Opponent,EMove m):evts)
-loop Me (Strategy f) evts st = do
-  let (evt, newS) = f evts
+                loop Opponent s st
+            | checkWin Opponent (updateGameState (Opponent,move) st) -> return (GRWin Opponent)
+            | otherwise -> loop Me s (updateGameState (Opponent,move) st)
+loop Me (Strategy f) st = do
+  let (evt, newS) = f (events st)
   putStrLn $ show evt
   case evt of
      EDraw Unknown -> do
              putStrLn "What did I get from the stock?"
              tile <- readTile
-             loop Me newS ((Me,EDraw (Known tile)):evts) (updateGameState (Me,evt) st)
-     EPass | head evts == (Opponent,EPass) -> return GRDraw
-           | otherwise -> loop Opponent newS ((Me,EPass):evts) (updateGameState (Me,evt) st)
-     EMove m | checkWin Me updEvts (updateGameState (Me,evt) st) -> return (GRWin Me)
-             | otherwise -> loop Opponent newS updEvts (updateGameState (Me,evt) st)
-       where updEvts = ((Me,EMove m):evts)
+             loop Me newS (updateGameState (Me,evt) st)
+     EPass | head (events st) == (Opponent,EPass) -> return GRDraw
+           | otherwise -> loop Opponent newS (updateGameState (Me,evt) st)
+     EMove m | checkWin Me (updateGameState (Me,evt) st) -> return (GRWin Me)
+             | otherwise -> loop Opponent newS (updateGameState (Me,evt) st)
 
-
-checkWin :: Player -> GameEvents -> GameState -> Bool
-checkWin p evts st = numTiles p st == 0
+checkWin :: Player -> GameState -> Bool
+checkWin p st = numTiles p st == 0
     where numTiles Me       = length . hand
           numTiles Opponent = opponentHand
