@@ -3,7 +3,10 @@
 -- Use, modification and distribution are subject to the MIT license
 -- (See accompanyung file MIT-LICENSE)
 
-module Domino.Strategy.Counting where
+module Domino.Strategy.Counting
+    (
+      counting
+    ) where
 
 import Data.List (minimumBy)
 import Data.Ord (comparing)
