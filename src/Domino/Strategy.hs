@@ -3,13 +3,20 @@
 -- Use, modification and distribution are subject to the MIT license
 -- (See accompanyung file MIT-LICENSE)
 
+{-# LANGUAGE GADTs #-}
+
 module Domino.Strategy where
 
 import Domino.Game
-import Domino.GameState
 
-data Strategy = Strategy (GameState -> (Event, Strategy))
+data Strategy where
+    Strategy :: (a -> (Player,Event) -> Strategy)
+             -> (a -> Event)
+             -> a
+             -> Strategy
 
-statelessStrategy :: (GameState -> Event) -> Strategy
-statelessStrategy f = Strategy g
-    where g state = (f state, Strategy g)
+notify :: Strategy -> (Player,Event) -> Strategy
+notify (Strategy f _ st) e = f st e
+
+next :: Strategy -> Event
+next (Strategy _ f st) = f st
