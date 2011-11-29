@@ -26,7 +26,7 @@ game = do
   putStrLn "Whose move is the first?"
   first <- readFirst
   let e = (first, EBegin hand first)
-  evalStateT (loop first (notify counting e)) (updateGameState e initialState)
+  evalStateT (updatedLoop first counting e) initialState
 
 
 type StateGameState = StateT GameState IO
@@ -42,14 +42,14 @@ loop Opponent s = do
   st <- get
   move <- lift $ readMove
   case move of
-    EDraw Unknown ->  (update (Opponent,move)) >> (loop Opponent (notify s (Opponent,move)))
+    EDraw Unknown -> updatedLoop Opponent s (Opponent,move)
     EPass | head (events st) == (Me,EPass) -> return GRDraw
-          | otherwise -> (update (Opponent,move)) >> (loop Me (notify s (Opponent,move)))
+          | otherwise -> updatedLoop Me s (Opponent,move)
     EMove m | not (isCorrectMove (line st) m) -> do
                 lift $ putStrLn "Move is not correct; try again:"
                 loop Opponent s
             | checkWin Opponent (updateGameState (Opponent,move) st) -> return (GRWin Opponent)
-            | otherwise -> (update (Opponent,move)) >> loop Me (notify s (Opponent,move))
+            | otherwise -> updatedLoop Me s (Opponent,move)
 loop Me s = do
   let evt = next s
   st <- get
@@ -58,11 +58,14 @@ loop Me s = do
      EDraw Unknown -> do
              lift $ putStrLn "What did I get from the stock?"
              tile <- lift $ readTile
-             (update (Me,EDraw $ Known tile)) >> loop Me (notify s (Me,EDraw $ Known tile))
+             updatedLoop Me s (Me,EDraw $ Known tile)
      EPass | head (events st) == (Opponent,EPass) -> return GRDraw
-           | otherwise -> (update (Me,evt)) >> loop Opponent (notify s (Me,evt))
+           | otherwise -> updatedLoop Opponent s (Me,evt)
      EMove m | checkWin Me (updateGameState (Me,evt) st) -> return (GRWin Me)
-             | otherwise -> (update (Me,evt)) >> loop Opponent (notify s (Me,evt))
+             | otherwise -> updatedLoop Opponent s (Me,evt)
+
+updatedLoop :: Player -> Strategy -> (Player,Event) -> StateGameState GameResult
+updatedLoop p s e = update e >> loop p (notify s e)
 
 checkWin :: Player -> GameState -> Bool
 checkWin p st = numTiles p st == 0
