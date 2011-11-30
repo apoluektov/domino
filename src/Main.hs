@@ -26,7 +26,7 @@ game = do
   putStrLn "Whose move is the first?"
   first <- readFirst
   let e = (first, EBegin hand first)
-  evalStateT (updatedLoop first e) (initialState, counting)
+  evalStateT (e >>> loop first) (initialState, counting)
 
 
 type StateGameState = StateT (GameState, Strategy) IO
@@ -37,14 +37,14 @@ loop Opponent = do
   (st,_) <- get
   move <- lift $ readMove
   case move of
-    EDraw Unknown -> updatedLoop Opponent (Opponent,move)
+    EDraw Unknown -> (Opponent,move) >>> loop Opponent
     EPass | head (events st) == (Me,EPass) -> return GRDraw
-          | otherwise -> updatedLoop Me (Opponent,move)
+          | otherwise -> (Opponent,move) >>> loop Me
     EMove m | not (isCorrectMove (line st) m) -> do
                 lift $ putStrLn "Move is not correct; try again:"
                 loop Opponent
             | checkWin Opponent (updateGameState (Opponent,move) st) -> return (GRWin Opponent)
-            | otherwise -> updatedLoop Me (Opponent,move)
+            | otherwise -> (Opponent,move) >>> loop Me
 loop Me = do
   (st, s) <- get
   let evt = next s
@@ -53,16 +53,14 @@ loop Me = do
      EDraw Unknown -> do
              lift $ putStrLn "What did I get from the stock?"
              tile <- lift $ readTile
-             updatedLoop Me (Me,EDraw $ Known tile)
+             (Me,EDraw $ Known tile) >>> loop Me
      EPass | head (events st) == (Opponent,EPass) -> return GRDraw
-           | otherwise -> updatedLoop Opponent (Me,evt)
+           | otherwise -> (Me,evt) >>> loop Opponent
      EMove m | checkWin Me (updateGameState (Me,evt) st) -> return (GRWin Me)
-             | otherwise -> updatedLoop Opponent (Me,evt)
+             | otherwise -> (Me,evt) >>> loop Opponent
 
-updatedLoop :: Player -> (Player,Event) -> StateGameState GameResult
-updatedLoop p e = update e >> loop p
-    where update evt = modify $ \(st,s) -> (updateGameState evt st, notify s evt)
-
+(>>>) :: (Player,Event) -> StateGameState GameResult -> StateGameState GameResult
+evt >>> st = (modify $ \(st,s) -> (updateGameState evt st, notify s evt)) >> st
 
 checkWin :: Player -> GameState -> Bool
 checkWin p st = numTiles p st == 0
