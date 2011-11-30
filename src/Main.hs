@@ -31,11 +31,6 @@ game = do
 
 type StateGameState = StateT (GameState, Strategy) IO
 
-update :: (Player, Event) -> StateGameState ()
-update evt = do
-  modify $ \(st,s) -> (updateGameState evt st, notify s evt)
-
--- TODO: clean me
 loop :: Player -> StateGameState GameResult
 loop Opponent = do
   lift $ putStrLn "What is opponent's move?"
@@ -66,6 +61,8 @@ loop Me = do
 
 updatedLoop :: Player -> (Player,Event) -> StateGameState GameResult
 updatedLoop p e = update e >> loop p
+    where update evt = modify $ \(st,s) -> (updateGameState evt st, notify s evt)
+
 
 checkWin :: Player -> GameState -> Bool
 checkWin p st = numTiles p st == 0
