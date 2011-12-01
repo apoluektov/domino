@@ -10,6 +10,8 @@ import Domino.Strategy
 import Domino.Strategy.Simple
 import Domino.Strategy.Counting
 
+import Control.Monad.State
+
 data GameResult = GRDraw | GRWin Player
                 deriving (Show, Eq)
 
@@ -27,41 +29,43 @@ game = do
   firstMove <- readTile
   putStrLn "Whose move is the first?" -- TODO: it can be deduced from revealed
   first <- readFirst
-  loop first counting [(first, EBegin hand first nobodyHas firstMove)]
-  -- TODO: tiles that nobody has should be taken into account by strategies
+  let e = (first, EBegin hand first nobodyHas firstMove)
+  evalStateT (e >>> loop first) (initialState, counting)
 
+type StateGameState = StateT (GameState, Strategy) IO
 
-loop :: Player -> Strategy -> GameEvents -> IO GameResult
-loop Opponent s evts = do
-  putStrLn "What is opponent's move?"
-  move <- readMove
+loop :: Player -> StateGameState GameResult
+loop Opponent = do
+  lift $ putStrLn "What is opponent's move?"
+  (st,_) <- get
+  move <- lift $ readMove
   case move of
-    EDraw Unknown -> loop Opponent s ((Opponent,EDraw Unknown):evts)
-    EPass | head evts == (Me,EPass) -> return GRDraw
-          | otherwise -> loop Me s ((Opponent,EPass):evts)
-    EMove m | not (isCorrectMove (line (restoreGameState evts)) m) -> do
-                putStrLn "Move is not correct; try again:"
-                loop Opponent s evts
-            | checkWin Opponent updEvts -> return (GRWin Opponent)
-            | otherwise -> loop Me s updEvts
-      where updEvts = ((Opponent,EMove m):evts)
-loop Me (Strategy f) evts = do
-  let (evt, newS) = f evts
-  putStrLn $ show evt
+    EDraw Unknown -> (Opponent,move) >>> loop Opponent
+    EPass | head (events st) == (Me,EPass) -> return GRDraw
+          | otherwise -> (Opponent,move) >>> loop Me
+    EMove m | not (isCorrectMove (line st) m) -> do
+                lift $ putStrLn "Move is not correct; try again:"
+                loop Opponent
+            | checkWin Opponent (updateGameState (Opponent,move) st) -> return (GRWin Opponent)
+            | otherwise -> (Opponent,move) >>> loop Me
+loop Me = do
+  (st, s) <- get
+  let evt = next s
+  lift $ putStrLn $ show evt
   case evt of
      EDraw Unknown -> do
-             putStrLn "What did I get from the stock?"
-             tile <- readTile
-             loop Me newS ((Me,EDraw (Known tile)):evts)
-     EPass | head evts == (Opponent,EPass) -> return GRDraw
-           | otherwise -> loop Opponent newS ((Me,EPass):evts)
-     EMove m | checkWin Me updEvts -> return (GRWin Me)
-             | otherwise -> loop Opponent newS updEvts
-       where updEvts = ((Me,EMove m):evts)
+             lift $ putStrLn "What did I get from the stock?"
+             tile <- lift $ readTile
+             (Me,EDraw $ Known tile) >>> loop Me
+     EPass | head (events st) == (Opponent,EPass) -> return GRDraw
+           | otherwise -> (Me,evt) >>> loop Opponent
+     EMove m | checkWin Me (updateGameState (Me,evt) st) -> return (GRWin Me)
+             | otherwise -> (Me,evt) >>> loop Opponent
 
+(>>>) :: (Player,Event) -> StateGameState GameResult -> StateGameState GameResult
+evt >>> st = (modify $ \(st,s) -> (updateGameState evt st, notify s evt)) >> st
 
-checkWin :: Player -> GameEvents -> Bool
-checkWin p evts = numTiles p st == 0
+checkWin :: Player -> GameState -> Bool
+checkWin p st = numTiles p st == 0
     where numTiles Me       = length . hand
           numTiles Opponent = opponentHand
-          st = restoreGameState evts

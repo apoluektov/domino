@@ -13,4 +13,4 @@ Cabal-Version: >= 1.2
 executable domino
   Main-Is:        Main.hs
   Hs-Source-Dirs: src
-  Build-Depends:  base >= 2.0, parsec
+  Build-Depends:  base >= 2.0, parsec, mtl

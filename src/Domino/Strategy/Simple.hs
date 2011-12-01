@@ -3,21 +3,28 @@
 -- Use, modification and distribution are subject to the MIT license
 -- (See accompanyung file MIT-LICENSE)
 
-module Domino.Strategy.Simple where
+module Domino.Strategy.Simple 
+    (
+      simpleStrat
+    ) where
 
 import Domino.Game
 import Domino.GameState
 import Domino.Strategy
 
-anyCorrectMove :: GameEvents -> Event
-anyCorrectMove [(Me, EBegin _ Me _ firstTile)] = EMove (Move firstTile L)
-anyCorrectMove evts
-    | null moves && stock st > 0 = EDraw Unknown
-    | null moves                 = EPass
-    | otherwise                  = EMove (head moves)
-    where
-      moves = correctMoves (hand st) (line st)
-      st = restoreGameState evts
+anyCorrectMove :: GameState -> Event
+anyCorrectMove st = evt st
+    where evt st =
+              case events st of
+                [(Me, EBegin _ Me _ firstTile)] -> EMove (Move firstTile L)
+                _
+                    | null moves && stock st > 0 -> EDraw Unknown
+                    | null moves                 -> EPass
+                    | otherwise                  -> EMove (head moves)
+              where moves = correctMoves (hand st) (line st)
+
+update :: GameState -> (Player, Event) -> Strategy
+update st e = Strategy update anyCorrectMove (updateGameState e st)
 
 simpleStrat :: Strategy
-simpleStrat = statelessStrategy anyCorrectMove
+simpleStrat = Strategy update anyCorrectMove initialState
